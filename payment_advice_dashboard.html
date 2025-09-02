@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Advice Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .dashboard-header {
+            background: white;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .date-range {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .date-input {
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .search-box {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 320px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 20px;
+            padding: 24px;
+            background: white;
+            margin: 0 24px 24px 24px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-card {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #1f2937;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .payment-filters {
+            background: white;
+            margin: 0 24px 24px 24px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 2px;
+            background: #f3f4f6;
+            padding: 4px;
+            border-radius: 8px;
+            width: fit-content;
+        }
+
+        .filter-tab {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            transition: all 0.2s;
+        }
+
+        .filter-tab.active {
+            background: white;
+            color: #1f2937;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table {
+            background: white;
+            margin: 0 24px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1400px;
+        }
+
+        th {
+            background: #f9fafb;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .account-name {
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .grn-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .grn-number {
+            font-weight: 600;
+            color: #1f2937;
+            font-family: monospace;
+        }
+
+        .grn-date {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .po-number {
+            font-family: monospace;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .sku-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sku-name {
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .sku-code {
+            font-size: 12px;
+            color: #9ca3af;
+            font-family: monospace;
+        }
+
+        .amount-cell {
+            font-weight: 600;
+            color: #059669;
+            font-family: monospace;
+        }
+
+        .payment-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status-paid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-pending {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .payment-date {
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .aging-days {
+            font-weight: 600;
+        }
+
+        .aging-good { color: #059669; }
+        .aging-warning { color: #d97706; }
+        .aging-critical { color: #dc2626; }
+
+        .amount-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .amount-main {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .amount-sub {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .reconcile-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: 500;
+            background: #3b82f6;
+            color: white;
+        }
+
+        .reconcile-btn:hover {
+            background: #2563eb;
+        }
+
+        .filter-content {
+            display: none;
+        }
+
+        .filter-content.active {
+            display: block;
+        }
+
+        .fifo-indicator {
+            font-size: 11px;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Payment Advice Dashboard</h1>
+        <div class="header-controls">
+            <div class="date-range">
+                <span>Date Range:</span>
+                <input type="date" class="date-input" value="2025-01-01">
+                <span>to</span>
+                <input type="date" class="date-input" value="2025-08-06">
+            </div>
+            <button class="btn btn-secondary">Reconcile Payments</button>
+            <button class="btn btn-primary">Export Payment Report</button>
+            <input type="text" class="search-box" placeholder="Search by GRN, PO, Account, or SKU...">
+        </div>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-value">156</div>
+            <div class="metric-label">Total GRNs</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">₹8.4M</div>
+            <div class="metric-label">Total Invoice Value</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">89</div>
+            <div class="metric-label">Payment Done</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">34</div>
+            <div class="metric-label">Partial Payment</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">33</div>
+            <div class="metric-label">Payment Pending</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">72%</div>
+            <div class="metric-label">Payment Rate</div>
+        </div>
+    </div>
+
+    <div class="payment-filters">
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">All Payments</button>
+            <button class="filter-tab" data-filter="paid">Payment Done</button>
+            <button class="filter-tab" data-filter="partial">Partial Payment</button>
+            <button class="filter-tab" data-filter="pending">Payment Pending</button>
+        </div>
+    </div>
+
+    <div id="all" class="filter-content active">
+        <div class="data-table">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Account</th>
+                            <th>GRN Details</th>
+                            <th>PO Number</th>
+                            <th>SKU Details</th>
+                            <th>Invoice Amount</th>
+                            <th>Paid Amount</th>
+                            <th>Pending Amount</th>
+                            <th>Payment Status</th>
+                            <th>Payment Date</th>
+                            <th>Aging (Days)</th>
+                            <th>FIFO Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="account-name">Walmart</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-001</span>
+                                    <span class="grn-date">Jan 15, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-WM-001</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Cadbury Dairy Milk 100g</span>
+                                    <span class="sku-code">SKU-CDM-100 (26 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹1,170</td>
+                            <td class="amount-cell">₹1,170</td>
+                            <td class="amount-cell">₹0</td>
+                            <td><span class="payment-status status-paid">Payment Done</span></td>
+                            <td class="payment-date">Jan 28, 2025</td>
+                            <td class="aging-days aging-good">13</td>
+                            <td><span class="fifo-indicator">FIFO #1</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">BigBasket</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-002</span>
+                                    <span class="grn-date">Jan 18, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-BB-002</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Britannia Good Day Cookies</span>
+                                    <span class="sku-code">SKU-BGD-200 (40 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹1,400</td>
+                            <td class="amount-cell">₹900</td>
+                            <td class="amount-cell">₹500</td>
+                            <td><span class="payment-status status-partial">Partial Payment</span></td>
+                            <td class="payment-date">Feb 05, 2025</td>
+                            <td class="aging-days aging-warning">18</td>
+                            <td><span class="fifo-indicator">FIFO #2</span></td>
+                            <td><button class="reconcile-btn">Reconcile</button></td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">Zepto</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-003</span>
+                                    <span class="grn-date">Jan 20, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-ZP-003</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Maggi 2-Minute Noodles</span>
+                                    <span class="sku-code">SKU-MAG-70 (112 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹1,568</td>
+                            <td class="amount-cell">₹1,568</td>
+                            <td class="amount-cell">₹0</td>
+                            <td><span class="payment-status status-paid">Payment Done</span></td>
+                            <td class="payment-date">Feb 02, 2025</td>
+                            <td class="aging-days aging-good">13</td>
+                            <td><span class="fifo-indicator">FIFO #3</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">DMart</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-004</span>
+                                    <span class="grn-date">Jan 22, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-DM-004</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Tata Tea Premium 1kg</span>
+                                    <span class="sku-code">SKU-TTP-1000 (20 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹7,600</td>
+                            <td class="amount-cell">₹0</td>
+                            <td class="amount-cell">₹7,600</td>
+                            <td><span class="payment-status status-pending">Payment Pending</span></td>
+                            <td class="payment-date">-</td>
+                            <td class="aging-days aging-critical">38</td>
+                            <td><span class="fifo-indicator">FIFO #4</span></td>
+                            <td><button class="reconcile-btn">Follow Up</button></td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">Blinkit</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-005</span>
+                                    <span class="grn-date">Jan 25, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-BL-005</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Amul Butter 500g</span>
+                                    <span class="sku-code">SKU-AMB-500 (55 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹13,200</td>
+                            <td class="amount-cell">₹13,200</td>
+                            <td class="amount-cell">₹0</td>
+                            <td><span class="payment-status status-paid">Payment Done</span></td>
+                            <td class="payment-date">Feb 08, 2025</td>
+                            <td class="aging-days aging-good">14</td>
+                            <td><span class="fifo-indicator">FIFO #5</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">Swiggy Instamart</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-006</span>
+                                    <span class="grn-date">Jan 28, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-SI-006</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Parle-G Biscuits 200g</span>
+                                    <span class="sku-code">SKU-PRG-200 (72 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹1,800</td>
+                            <td class="amount-cell">₹1,200</td>
+                            <td class="amount-cell">₹600</td>
+                            <td><span class="payment-status status-partial">Partial Payment</span></td>
+                            <td class="payment-date">Feb 12, 2025</td>
+                            <td class="aging-days aging-warning">21</td>
+                            <td><span class="fifo-indicator">FIFO #6</span></td>
+                            <td><button class="reconcile-btn">Reconcile</button></td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">Walmart</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-007</span>
+                                    <span class="grn-date">Feb 01, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-WM-007</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Surf Excel Powder 1kg</span>
+                                    <span class="sku-code">SKU-SEP-1000 (30 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹5,400</td>
+                            <td class="amount-cell">₹5,400</td>
+                            <td class="amount-cell">₹0</td>
+                            <td><span class="payment-status status-paid">Payment Done</span></td>
+                            <td class="payment-date">Feb 15, 2025</td>
+                            <td class="aging-days aging-good">14</td>
+                            <td><span class="fifo-indicator">FIFO #7</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">BigBasket</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-008</span>
+                                    <span class="grn-date">Feb 03, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-BB-008</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Dove Soap 125g</span>
+                                    <span class="sku-code">SKU-DVS-125 (42 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹2,730</td>
+                            <td class="amount-cell">₹0</td>
+                            <td class="amount-cell">₹2,730</td>
+                            <td><span class="payment-status status-pending">Payment Pending</span></td>
+                            <td class="payment-date">-</td>
+                            <td class="aging-days aging-critical">26</td>
+                            <td><span class="fifo-indicator">FIFO #8</span></td>
+                            <td><button class="reconcile-btn">Follow Up</button></td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">DMart</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-009</span>
+                                    <span class="grn-date">Feb 05, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-DM-009</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Fortune Sunflower Oil 1L</span>
+                                    <span class="sku-code">SKU-FSO-1000 (36 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹4,320</td>
+                            <td class="amount-cell">₹2,500</td>
+                            <td class="amount-cell">₹1,820</td>
+                            <td><span class="payment-status status-partial">Partial Payment</span></td>
+                            <td class="payment-date">Feb 20, 2025</td>
+                            <td class="aging-days aging-warning">24</td>
+                            <td><span class="fifo-indicator">FIFO #9</span></td>
+                            <td><button class="reconcile-btn">Reconcile</button></td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">Zepto</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-010</span>
+                                    <span class="grn-date">Feb 08, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-ZP-010</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Colgate Toothpaste 200g</span>
+                                    <span class="sku-code">SKU-CLG-200 (68 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹5,780</td>
+                            <td class="amount-cell">₹0</td>
+                            <td class="amount-cell">₹5,780</td>
+                            <td><span class="payment-status status-pending">Payment Pending</span></td>
+                            <td class="payment-date">-</td>
+                            <td class="aging-days aging-warning">22</td>
+                            <td><span class="fifo-indicator">FIFO #10</span></td>
+                            <td><button class="reconcile-btn">Follow Up</button></td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">Blinkit</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-011</span>
+                                    <span class="grn-date">Feb 12, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-BL-011</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Nestle Maggi Masala</span>
+                                    <span class="sku-code">SKU-NMM-50 (85 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹1,275</td>
+                            <td class="amount-cell">₹1,275</td>
+                            <td class="amount-cell">₹0</td>
+                            <td><span class="payment-status status-paid">Payment Done</span></td>
+                            <td class="payment-date">Feb 25, 2025</td>
+                            <td class="aging-days aging-good">13</td>
+                            <td><span class="fifo-indicator">FIFO #11</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">DMart</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-012</span>
+                                    <span class="grn-date">Feb 15, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-DM-012</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Haldiram Bhujia 200g</span>
+                                    <span class="sku-code">SKU-HB-200 (45 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹2,250</td>
+                            <td class="amount-cell">₹1,500</td>
+                            <td class="amount-cell">₹750</td>
+                            <td><span class="payment-status status-partial">Partial Payment</span></td>
+                            <td class="payment-date">Feb 28, 2025</td>
+                            <td class="aging-days aging-warning">15</td>
+                            <td><span class="fifo-indicator">FIFO #12</span></td>
+                            <td><button class="reconcile-btn">Reconcile</button></td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">Swiggy Instamart</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-013</span>
+                                    <span class="grn-date">Feb 18, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-SI-013</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">ITC Sunfeast Biscuits</span>
+                                    <span class="sku-code">SKU-ISB-150 (92 units)</span>
+                                </div>
+                            </td>
+                            <td class="amount-cell">₹2,760</td>
+                            <td class="amount-cell">₹0</td>
+                            <td class="amount-cell">₹2,760</td>
+                            <td><span class="payment-status status-pending">Payment Pending</span></td>
+                            <td class="payment-date">-</td>
+                            <td class="aging-days aging-warning">11</td>
+                            <td><span class="fifo-indicator">FIFO #13</span></td>
+                            <td><button class="reconcile-btn">Follow Up</button></td>
+                        </tr>
+                        <tr>
+                            <td class="account-name">BigBasket</td>
+                            <td>
+                                <div class="grn-info">
+                                    <span class="grn-number">GRN-2025-014</span>
+                                    <span class="grn-date">Feb 20, 2025</span>
+                                </div>
+                            </td>
+                            <td class="po-number">PO-BB-014</td>
+                            <td>
+                                <div class="sku-info">
+                                    <span class="sku-name">Patanjali Honey 500g</span>
+                                    <span class="sku-code">SKU-PH-500 (28 
